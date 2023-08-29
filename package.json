@@ -1,7 +1,7 @@
 {
   "name": "fish-cli-dev",
   "workspaces": [
-    "packages/"
+    "packages/*"
   ],
   "version": "1.0.0",
   "description": "",
