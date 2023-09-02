@@ -1,7 +1,7 @@
 {
   "name": "fish-cli-dev",
   "workspaces": [
-    "packages/*"
+    "./*"
   ],
   "version": "1.0.0",
   "description": "",
@@ -14,5 +14,11 @@
   "license": "ISC",
   "devDependencies": {
     "lerna": "^7.1.5"
+  },
+  "dependencies": {
+    "@fish-cli-dev/log": "file:utils/log",
+    "colors": "^1.4.0",
+    "import-local": "^3.1.0",
+    "npmlog": "^7.0.1"
   }
 }

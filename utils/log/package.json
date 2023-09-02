@@ -1,0 +1,35 @@
+{
+  "name": "@fish-cli-dev/log",
+  "version": "1.0.1",
+  "description": "fish-cli-dev log",
+  "keywords": [
+    "log"
+  ],
+  "author": "lostfish <845406218@qq.com>",
+  "homepage": "https://github.com/lostfish2/fish-cli-dev#readme",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lostfish2/fish-cli-dev.git"
+  },
+  "scripts": {
+    "test": "node ./__tests__/@fish-cli-dev/log.test.js"
+  },
+  "bugs": {
+    "url": "https://github.com/lostfish2/fish-cli-dev/issues"
+  },
+  "dependencies": {
+    "npmlog": "^7.0.1"
+  }
+}
