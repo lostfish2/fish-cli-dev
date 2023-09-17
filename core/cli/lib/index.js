@@ -9,7 +9,7 @@ const userHome = require('user-home')
 const pathExisits = require('path-exists').sync
 const commander = require('commander')
 const log = require('@fish-cli-dev/log')
-const init = require('@fish-cli-dev/init')
+// const init = require('@fish-cli-dev/init')
 const exec = require('@fish-cli-dev/exec')
 
 const constant = require('./const')
@@ -64,20 +64,16 @@ function registerCommand() {
       console.log(colors.red('可用命令:' + availableCommands.join(',')))
     }
   })
-
   if (program.args && program.args.length < 1) {
     program.outputHelp()
     console.log()
   }
   program.parse(process.argv)
-
-
-
 }
 
 async function prepare() {
   checkPkgVersion()
-  checkNodeVersion()
+  // checkNodeVersion()
   checkRoot()
   checkUserHome()
   //checkInputArgs()
@@ -144,15 +140,14 @@ function checkRoot() {
   const rootCheck = require('root-check')
   rootCheck()
 }
-
 //检查node版本号 h
-function checkNodeVersion() {
-  const currentVersion = process.version
-  const lowestVersion = constant.LOWEST_NODE_VERSION
-  if (!semver.gte(currentVersion, lowestVersion)) {
-    throw new Error(colors.red(`fish-cli 需要安装v${lowestVersion}以上版本的node.js`))
-  }
-}
+// function checkNodeVersion() {
+//   const currentVersion = process.version
+//   const lowestVersion = constant.LOWEST_NODE_VERSION
+//   if (!semver.gte(currentVersion, lowestVersion)) {
+//     throw new Error(colors.red(`fish-cli 需要安装v${lowestVersion}以上版本的node.js`))
+//   }
+// }
 
 //检查当前版本号
 function checkPkgVersion() {
