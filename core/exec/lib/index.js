@@ -63,9 +63,10 @@ async function exec() {
         }
       })
       args[args.length - 1] = o
-      const code = `require(${rootFile}).call(null, ${JSON.stringify(args)})`
-      cp.spawn('cmd', ['/c', 'node', '-e', code])
-      const child = spawn('node', ['-V', code], {
+      const code = `require('${rootFile}').call(null,${JSON.stringify(args)})`
+
+      // cp.spawn('cmd', ['/c', 'node', '-e', code])
+      const child = spawn('node', ['-e', code], {
         cwd: process.cwd(),
         stdio: 'inherit'
       })

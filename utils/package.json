@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "cli-spinner": "^0.2.10"
+  }
+}
