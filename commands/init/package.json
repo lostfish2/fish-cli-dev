@@ -32,8 +32,11 @@
     "@fish-cli-dev/package": "file:../../models/package",
     "@fish-cli-dev/request": "file:../../utils/request",
     "@fish-cli-dev/utils": "file:../../utils/utils",
+    "ejs": "^3.1.9",
     "fs-extra": "^9.0.1",
+    "glob": "^7.1.7",
     "inquirer": "^8.2.5",
+    "kebab-case": "^1.0.2",
     "semver": "^7.5.4",
     "user-home": "^3.0.0"
   }

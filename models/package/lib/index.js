@@ -7,8 +7,7 @@ const npminstall = require('npminstall')
 const { isObject } = require('@fish-cli-dev/utils')
 const formatPath = require('@fish-cli-dev/format-path')
 const { getDefaultRegistry, getNpmLatestVersion } = require('@fish-cli-dev/get-npm-info');
-const { version } = require('os');
-const { mkdirSync } = require('fs');
+
 
 class Package {
   constructor(options) {
@@ -37,6 +36,15 @@ class Package {
       this.packageVersion = await getNpmLatestVersion(this.packageName)
     }
   }
+  get whichSys() {
+    if (pathExisits(this.cacheFilePath)) {
+      //linux
+      return true
+    } else {
+      //windows
+      return false
+    }
+  }
   get cacheFilePath() {
     return path.resolve(this.storeDir, `_${this.cacheFilePathPrefix}@${this.packageVersion}@${this.packageName}`)
   }
@@ -45,6 +53,13 @@ class Package {
   }
   get cacheFilePathWinModule() {
     return path.resolve(this.storeDir, `${this.packageName}`)
+  }
+  get sysCacheFilePath() {
+    if (pathExisits(this.cacheFilePath)) {
+      return this.cacheFilePath
+    } else {
+      return this.cacheFilePathWin
+    }
   }
   getSpecificCacheFilePath(packageVersion) {
     return pathExisits(this.cacheFilePath) ? path.resolve(this.storeDir, `_${this.cacheFilePathPrefix}@${packageVersion}@${this.packageName}`) : path.resolve(this.storeDir, `.store\\${this.packageName}@${packageVersion}`)
@@ -94,7 +109,8 @@ class Package {
           version: latestPackageVersion
         }]
       })
-
+      this.packageVersion = latestPackageVersion
+    } else {
       this.packageVersion = latestPackageVersion
     }
   }
@@ -119,7 +135,6 @@ class Package {
     }
     if (this.storeDir) {
       let path = this.cacheFilePathWinModule
-      console.log("@", _getRootFile(path))
       return _getRootFile(path)
     } else {
       return _getRootFile(this.targetPath)

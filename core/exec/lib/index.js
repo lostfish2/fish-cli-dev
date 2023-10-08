@@ -2,7 +2,7 @@
 const Package = require('@fish-cli-dev/package')
 const log = require('@fish-cli-dev/log')
 const path = require('path')
-const cp = require('child_process')
+const { spawn } = require('@fish-cli-dev/utils')
 const SETTINGS = {
   init: 'pkg-dir'
 }
@@ -83,12 +83,5 @@ async function exec() {
     }
   }
 }
-//win兼容处理
-function spawn(command, args, options) {
-  const win32 = process.platform === 'win32'
 
-  const cmd = win32 ? 'cmd' : command
-  const cmdArgs = win32 ? ['/c'].concat(command, args) : args
-  return cp.spawn(cmd, cmdArgs, options || {})
-}
 module.exports = exec;
