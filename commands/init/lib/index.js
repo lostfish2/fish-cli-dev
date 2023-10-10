@@ -92,6 +92,7 @@ class InitCommand extends Command {
 
     ejsRender(options) {
         const dir = process.cwd()
+        const projectInfo = this.projectInfo
         return new Promise((resolve, reject) => {
             glob('**', {
                 cwd: dir,
@@ -104,7 +105,7 @@ class InitCommand extends Command {
                 Promise.all(files.map(file => {
                     const filePath = path.join(dir, file)
                     return new Promise((resolve1, reject1) => {
-                        ejs.renderFile(filePath, this.projectInfo, {}, (err, result) => {
+                        ejs.renderFile(filePath, projectInfo, {}, (err, result) => {
                             // console.log(err, result)
                             if (err) {
                                 reject1(err)
@@ -151,7 +152,24 @@ class InitCommand extends Command {
         await this.execCommand(startCommand, '启动执行命令失败！')
     }
     async installCustomTemplate() {
-        console.log('安装自定义模板')
+        if (await this.templateNpm.exists()) {
+            const rootFile = this.templateNpm.getRootFilePath()
+            if (fs.existsSync(rootFile)) {
+                log.notice('开始执行自定义模板')
+                const templatePath = this.templateNpm.whichSys ? path.resolve(this.templateNpm.cacheFilePath, 'template') :
+                    path.resolve(this.templateNpm.cacheFilePathWin, `node_modules\\${this.templateInfo.npmName}\\template`)
+                const options = {
+                    templateInfo: this.templateInfo,
+                    projectInfo: this.projectInfo,
+                    sourcePath: templatePath,
+                    targetPath: process.cwd()
+                }
+                const code = `require('${rootFile}')(${JSON.stringify(options)})`
+                log.verbose('code', code)
+                await execAsync('node', ['-e', code], { stdio: 'inherit', cwd: process.cwd() })
+                log.success('自定义安装模板成功')
+            }
+        }
     }
     async downloadTemplate() {
         const { projectTemplate } = this.projectInfo
