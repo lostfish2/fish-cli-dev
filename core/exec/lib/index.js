@@ -3,8 +3,10 @@ const Package = require('@fish-cli-dev/package')
 const log = require('@fish-cli-dev/log')
 const path = require('path')
 const { spawn } = require('@fish-cli-dev/utils')
+
 const SETTINGS = {
-  init: 'pkg-dir'
+  init: '@fish-cli/init',
+  publish: '@fish-cli/publish',
 }
 const CACHE_DIR = 'dependencies'
 
