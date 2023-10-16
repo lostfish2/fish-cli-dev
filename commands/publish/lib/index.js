@@ -4,10 +4,18 @@ const path = require('path')
 const fs = require('fs')
 const fse = require('fs-extra')
 const Command = require('@fish-cli-dev/command')
+const Git = require('@fish-cli-dev/git')
 const log = require('@fish-cli-dev/log')
+
+
+
 class PublishCommand extends Command {
   init() {
-    console.log('init')
+    //处理参数
+    log.verbose('publish', this._argv, this._cmd)
+    this.options = {
+      refreshServer: this._cmd.refreshServer
+    }
   }
   async exec() {
     try {
@@ -17,8 +25,10 @@ class PublishCommand extends Command {
       // 1、初始化检查
       this.prepare()
       // 2、git Flow自动化
+      const git = new Git(this.projectInfo, this.options)
+      await git.
+        prepare()
       // 3、云构建和云发布
-
     } catch (e) {
       log.error(e.message)
       if (process.env.LOG_LEVEL === 'verbose') {
@@ -41,6 +51,7 @@ class PublishCommand extends Command {
     if (!name || !version || !scripts || !scripts.build) {
       throw new Error('package.json信息不全，请检查是否存在name、version和scripts(需提供build命令)！')
     }
+    this.projectInfo = { name, version, dir: projectPath }
   }
 
 }
