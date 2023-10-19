@@ -96,6 +96,28 @@ class Git {
   async initCommit() {
     await this.checkConflicted()
     await this.checkNotCommitted()
+    if (await this.checkRemoteMaster()) {
+      await this.pullRemateRepo('master', {
+        '--allow-unrelated-histories': null
+      })
+    } else {
+      await this.pushRemoteRepo('master')
+    }
+  }
+  async pullRemateRepo(branckName, options) {
+    log.info(`同步远程${branckName}分支代码`)
+    await this.git.pull('origin', branckName, options)
+      .catch(err => {
+        log.error(err.message)
+      })
+  }
+  async pushRemoteRepo(branckName) {
+    log.info(`推送代码至${branckName}分支`)
+    await this.git.push('origin', branckName)
+    log.success('推送代码成功')
+  }
+  async checkRemoteMaster() {
+    return (await this.git.listRemote(['--refs'])).indexOf('refs/heads/master') >= 0
   }
   async checkNotCommitted() {
     const status = await this.git.status()
@@ -103,7 +125,8 @@ class Git {
       status.created.length > 0 ||
       status.deleted.length > 0 ||
       status.modified.length > 0 ||
-      status.renamed.length > 0) {
+      status.renamed.length > 0
+    ) {
       log.verbose('status', status)
       await this.git.add(status.not_added)
       await this.git.add(status.created)
@@ -286,28 +309,30 @@ class Git {
   checkGitIgnore() {
     const gitIgnore = path.resolve(this.dir, GIT_IGNORE_FILE)
     if (!fs.existsSync(gitIgnore)) {
-      writeFile(gitIgnore, `.DS_Store
-      node_modules
-      /dist
-      
-      #local env files
-      .env.local
-      .env.*.local
-      
-      #Log files 
-      npm-debug.log*
-      yarn-debug.log*
-      yarn-error.log*
-      pnpm-debug.log*
-      
-      #Editor directories and files
-      .idea
-      .vscode
-      *.suo
-      *.ntvs*
-      *.njsproj
-      *.sln
-      *.sw?`)
+      writeFile(gitIgnore, `
+.DS_Store
+node_modules
+/dist
+
+#local env files
+.env.local
+.env.*.local
+
+#Log files 
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+#Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?`
+      )
       log.success(`自动写入${GIT_IGNORE_FILE}文件成功`)
     }
   }
