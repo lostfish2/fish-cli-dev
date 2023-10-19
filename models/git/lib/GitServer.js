@@ -7,13 +7,13 @@ class GitServer {
         this.type = type
         this.token = token
     }
-    setToken() {
-        error('setToken')
+    setToken(token) {
+        this.token = token
     }
-    createRepo() {
+    createRepo(name) {
         error('createRepo')
     }
-    createOrgRepo() {
+    createOrgRepo(name, login) {
         error('createOrgRepo')
     }
     getRemote() {
@@ -25,11 +25,27 @@ class GitServer {
     getOrg() {
         error('getOrg')
     }
-    getSSHKeysUrl() {
-        error('getSSHKeysUrl')
+    getRepo(login, name) {
+        error('getRepo')
+    }
+    getTokenUrl() {
+        error('getTokenUrl')
     }
     getTokenHelpUrl() {
         error('getTokenHelpUrl')
+    }
+    isHttpResponse = (response) => {
+        return response && response.status
+    }
+    handleResponse = (response) => {
+        if (this.isHttpResponse(response) && response !== 200) {
+            return null
+        } else {
+            if (response.message === 'Not Found Project') {
+                return null
+            }
+            return response
+        }
     }
 }
 

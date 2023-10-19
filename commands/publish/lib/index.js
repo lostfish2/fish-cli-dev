@@ -14,7 +14,10 @@ class PublishCommand extends Command {
     //处理参数
     log.verbose('publish', this._argv, this._cmd)
     this.options = {
-      refreshServer: this._cmd.refreshServer
+      refreshServer: this._cmd.refreshServer,
+      refreshToken: this._cmd.refreshToken,
+      refreshOwner: this._cmd.refreshOwner
+
     }
   }
   async exec() {

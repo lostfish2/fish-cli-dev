@@ -45,6 +45,8 @@ function registerCommand() {
   program
     .command('publish')
     .option('--refreshServer', '强制更新远程Git仓库')
+    .option('--refreshToken', '强制更新Git仓库Token')
+    .option('--refreshOwner', '强制更新Git仓库类型')
     .action(exec)
   //开启debug模式
   program.on('option:debug', function () {
