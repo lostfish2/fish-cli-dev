@@ -4,6 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const SimpleGit = require('simple-git')
 const userHome = require('user-home')
+const semver = require('semver')
 const log = require('@fish-cli-dev/log')
 const fse = require('fs-extra')
 const inquirer = require('inquirer')
@@ -25,6 +26,9 @@ const GITEE = 'gitee'
 
 const REPO_OWNER_USER = 'user'
 const REPO_OWNER_ORG = 'org'
+
+const VERSION_RELEASE = 'release'
+const VERSION_DEVELOP = 'dev'
 
 const GIT_SERVER_TYPE = [{
   name: 'Github',
@@ -67,6 +71,7 @@ class Git {
     this.refreshServer = refreshServer
     this.refreshToken = refreshToken
     this.refreshOwner = refreshOwner
+    this.branch = null //本地开发分支
   }
   async prepare() {
     //检查缓存主目录
@@ -92,6 +97,87 @@ class Git {
     }
     await this.initAndAddRemote()
     await this.initCommit()
+  }
+  async commit() {
+    //1,生成开发分支
+    await this.getCorrectVersion()
+    //2,在开发分支上提交代码
+    //3,合并远程开发分支
+    //4,推送开发分支
+  }
+  async getCorrectVersion() {
+    //1.获取远程发布分支
+    //版本号规范：远程分支：release/x,y,z  开发分支：dev/x,y,z
+    //版本号递增规范：major/minor/patch
+    log.info('获取代码分支')
+    const remoteBranchList = await this.getRemoteBranchList(VERSION_RELEASE)
+    let releaseVersion = null
+    if (remoteBranchList && remoteBranchList.length > 0) {
+      releaseVersion = remoteBranchList[0]
+    }
+    log.verbose('线上最新版本号', releaseVersion)
+    //2.生成本地开发分支
+    const devVersion = this.version
+    if (!releaseVersion) {
+      this.branch = `${VERSION_DEVELOP}/${devVersion}`
+    } else if (semver.gt(this.version, releaseVersion)) {
+      log.info('当前版本大于线上最新版本', `${devVersion}>=${releaseVersion}`)
+      this.branch = `${VERSION_DEVELOP}/${devVersion}`
+    } else {
+      log.info('当前线上版本大于本地版本', `${releaseVersion}>${devVersion}`)
+      const incType = (await inquirer.prompt({
+        type: 'list',
+        name: 'incType',
+        message: '自动升级版本,请选择升级版本类型',
+        default: 'patch',
+        choices: [{
+          name: `小版本(${releaseVersion} -> ${semver.inc(releaseVersion, 'patch')})`,
+          value: 'patch'
+        }, {
+          name: `中版本(${releaseVersion} -> ${semver.inc(releaseVersion, 'minor')})`,
+          value: 'minor'
+        }, {
+          name: `大版本(${releaseVersion} -> ${semver.inc(releaseVersion, 'major')})`,
+          value: 'major'
+        },]
+      })).incType
+      const incVersion = semver.inc(releaseVersion, incType)
+      this.branch = `${VERSION_DEVELOP}/${incVersion}`
+      this.version = incVersion
+    }
+    log.verbose('本地开发分支', this.branch)
+    //3.将version同步到packgae.json
+    this.syncVersionToPackageJson()
+  }
+  syncVersionToPackageJson() {
+    const pkg = fse.readJsonSync(`${this.dir}/package.json`)
+    if (pkg && pkg.version !== this.version) {
+      pkg.version = this.version
+      console.log('$$$', pkg.version)
+      fse.writeFileSync(`${this.dir}/package.json`, JSON.stringify(pkg))
+    }
+  }
+  async getRemoteBranchList(type) {
+    const remoteList = await this.git.listRemote(['--refs'])
+    let reg
+    if (type === VERSION_RELEASE) {
+      reg = /.+?refs\/tags\/release\/(\d+\.\d+\.\d+)/g
+    } else {
+
+    }
+    return remoteList.split('\n').map(remote => {
+      const match = reg.exec(remote)
+      reg.lastIndex = 0
+      if (match && semver.valid(match[1])) {
+        return match[1]
+      }
+    }).filter(_ => _).sort((a, b) => {
+      if (semver.lte(b, a)) {
+        if (a === b) return 0
+        return -1
+      }
+      return 1
+    })
   }
   async initCommit() {
     await this.checkConflicted()
@@ -295,7 +381,6 @@ class Git {
       } finally {
         spinner.stop(true)
       }
-      console.log('@@@', repo)
       if (repo) {
         log.success('远程仓库创建成功')
       } else {

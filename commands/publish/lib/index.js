@@ -23,15 +23,16 @@ class PublishCommand extends Command {
   async exec() {
     try {
       const startTime = new Date().getTime()
-      const endTime = new Date().getTime()
-      log.info('本次发布耗时:', Math.floor((endTime - startTime) / 1000) + 's')
+
       // 1、初始化检查
       this.prepare()
       // 2、git Flow自动化
       const git = new Git(this.projectInfo, this.options)
-      await git.
-        prepare()
+      await git.prepare()   //自动化提交准备和代码仓库初始化
+      await git.commit()    //代码自动化提交
       // 3、云构建和云发布
+      const endTime = new Date().getTime()
+      log.info('本次发布耗时:', Math.floor((endTime - startTime) / 1000) + 's')
     } catch (e) {
       log.error(e.message)
       if (process.env.LOG_LEVEL === 'verbose') {
