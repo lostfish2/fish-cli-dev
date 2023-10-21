@@ -101,9 +101,49 @@ class Git {
   async commit() {
     //1,生成开发分支
     await this.getCorrectVersion()
-    //2,在开发分支上提交代码
-    //3,合并远程开发分支
-    //4,推送开发分支
+    //2.检查stash区
+    await this.checkStash()
+    //3.检查代码冲突
+    await this.checkConflicted()
+    //4.切换开发分支
+    await this.checkOutBranch(this.branch)
+    //5.合并远程master分支和开发分支代码
+    await this.pullRemoteMatserAndBranch()
+    //6.将开发分支推送到远程仓库
+    await this.pushRemoteRepo(this.branch)
+  }
+  async pullRemoteMatserAndBranch() {
+    log.info(`合并 [master] -> [${this.branch}]`)
+    await this.pullRemoteRepo('master')
+    log.success('合并远程 [master] 分支代码成功')
+    await this.checkConflicted()
+    log.info('检查远程开发分支')
+    const remoteBranchList = await this.getRemoteBranchList()
+    if (remoteBranchList.indexOf(this.branch)) {
+      log.info(`合并[${this.branch}] -> [${this.branch}]`)
+      await this.pullRemoteRepo(this.branch)
+      log.success(`合并远程 [${this.branch}] 分支代码成功`)
+      await this.checkConflicted()
+    } else {
+      log.success(`不存在远程分支 [${this.branch}]`)
+    }
+  }
+  async checkOutBranch(branch) {
+    const localBranchList = await this.git.branchLocal()
+    if (localBranchList.all.indexOf(branch) >= 0) {
+      await this.git.checkout(branch)
+    } else {
+      await this.git.checkoutLocalBranch(branch)
+    }
+    log.success(`分支切换到${branch}`)
+  }
+  async checkStash() {
+    log.info('检查stash记录')
+    const stashList = await this.git.stashList()
+    if (stashList.all.length > 0) {
+      await this.git.stash(['pop'])
+      log.success('stash pop成功')
+    }
   }
   async getCorrectVersion() {
     //1.获取远程发布分支
@@ -163,7 +203,7 @@ class Git {
     if (type === VERSION_RELEASE) {
       reg = /.+?refs\/tags\/release\/(\d+\.\d+\.\d+)/g
     } else {
-
+      reg = /.+?refs\/heads\/dev\/(\d+\.\d+\.\d+)/g
     }
     return remoteList.split('\n').map(remote => {
       const match = reg.exec(remote)
@@ -183,14 +223,14 @@ class Git {
     await this.checkConflicted()
     await this.checkNotCommitted()
     if (await this.checkRemoteMaster()) {
-      await this.pullRemateRepo('master', {
+      await this.pullRemoteRepo('master', {
         '--allow-unrelated-histories': null
       })
     } else {
       await this.pushRemoteRepo('master')
     }
   }
-  async pullRemateRepo(branckName, options) {
+  async pullRemoteRepo(branckName, options) {
     log.info(`同步远程${branckName}分支代码`)
     await this.git.pull('origin', branckName, options)
       .catch(err => {
