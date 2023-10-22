@@ -30,4 +30,4 @@ fish-cli-dev clean
 fish-cli-dev --debug
 调试本地包：
 
-imooc-cli init --packagePath /Users/sam/Desktop/imooc-cli/packages/init/
+fish-cli-dev init --packagePath /Users/sam/Desktop/imooc-cli/packages/init/
