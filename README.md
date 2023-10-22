@@ -1,8 +1,8 @@
 # fish-cli-dev
-创建项目
-项目/组件初始化
-
+##创建项目
+###项目/组件初始化
 imooc-cli init 
+
 强制清空当前文件夹
 
 imooc-cli init --force
